@@ -1,0 +1,17 @@
+<div>
+  <h1>{{ name }}</h1>
+  <canvas id="c{{ i }}"></canvas>
+</div>
+
+
+<script type="text/javascript" defer>
+  const ctx{{ i }} = document.getElementById('c{{ i }}');
+
+  new Chart(ctx{{ i }}, {
+    type: "line",
+    data: {
+      labels: {{ labels }},
+    datasets: {{ datasets }},
+      }
+    });
+</script>
