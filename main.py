@@ -18,7 +18,7 @@ base = backend.Base(f"{db_prefix}metrics")
 meta = backend.Base(f"{db_prefix}meta")
 
 palette = [
-    "rgb(255, 99, 132)", # different order to ensure contrast if only two or three lines plotted
+    "rgb(255, 99, 132)",  # different order to ensure contrast if only two or three lines plotted
     "rgb(54, 162, 235)",
     "rgb(255, 205, 86)",
     "rgb(75, 192, 192)",
@@ -27,6 +27,19 @@ palette = [
 ]
 
 transparent_palette = [i.replace("rgb", "rgba").replace(")", ", 0.2)") for i in palette]
+
+
+with open("static/templates/base.html") as file:
+    BASE_TEMPLATE = j2.Template(file.read())
+
+with open("static/templates/chart.html") as file:
+    CHART_TEMPLATE = j2.Template(file.read())
+
+with open("static/templates/chartmarkup.html") as file:
+    CMK_TEMPLATE = j2.Template(file.read())
+
+with open("static/templates/chartscript.js") as file:
+    SCRIPT_TEMPLATE = j2.Template(file.read())
 
 
 class Templater:
@@ -52,10 +65,7 @@ class Templater:
         y_axis: str = "Value",
         i: int = 0,
     ) -> str:
-        with open("static/templates/chart.html") as file:
-            template = j2.Template(file.read())
-
-        return template.render(
+        return CHART_TEMPLATE.render(
             i=i,
             name=name,
             labels=Templater.list_to_string([f'"{j}"' for j in labels]),
@@ -72,18 +82,14 @@ class Templater:
     ) -> str:
         charts = charts if len(charts) > 0 else ["<h1>No data to display.</h1>"]
 
-        with open("static/templates/base.html") as file:
-            template = j2.Template(file.read())
-
-        return template.render(
+        return BASE_TEMPLATE.render(
             title=title,
             charts="\n".join(charts),
             bodyClasses=f"class=\"{'dark' if dark else ''}\"",
         )
 
 
-@app.get("/", response_class=HTMLResponse)
-async def index(dark: bool = False) -> str:
+def get_charts():
     db = base.fetch().items
 
     charts = []
@@ -106,7 +112,46 @@ async def index(dark: bool = False) -> str:
             )
         )
 
+    return charts
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(dark: bool = False) -> str:
+    charts = get_charts()
+
     return Templater.dashboard(title="Home", charts=charts, dark=dark)
+
+
+@app.get("/charts")
+async def charts(dark: bool = False) -> t.Tuple[str, str]:
+    db = base.fetch().items
+
+    charts = []
+    codes = []
+    for i in db:
+        datasets = []
+        for k, v in i["metrics"].items():
+            datasets.append(Templater.dataset(k, v, len(datasets) - 1))
+
+        max_len = max([len(i["metrics"][k]) for i in db for k in i["metrics"]])
+        labels = [str(i) for i in range(max_len)]
+
+        codes.append(
+            SCRIPT_TEMPLATE.render(
+                i=len(codes),
+                datasets=Templater.list_to_string(datasets),
+                labels=Templater.list_to_string([f'"{j}"' for j in labels]),
+            )
+        )
+
+        charts.append(
+            CMK_TEMPLATE.render(
+                i=len(charts),
+                name=i["key"],
+            )
+        )
+
+    return "\n".join(charts), "\n".join(codes)
 
 
 @app.get("/set/{graph}/{name}/{value}")
