@@ -5,5 +5,10 @@ new Chart(ctx{{ i }}, {
   data: {
     labels: {{ labels }},
     datasets: {{ datasets }},
+  },
+  options: {
+    animation: {
+      duration: 0,
+    }
   }
 });

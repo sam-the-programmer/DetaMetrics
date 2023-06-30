@@ -6,3 +6,7 @@ micros:
     engine: python3.9
     primary: true
     dev: uvicorn main:app --reload
+    public_routes:
+      - /clear
+      - /set/*
+      - /charts
