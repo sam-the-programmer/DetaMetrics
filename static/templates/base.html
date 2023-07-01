@@ -174,7 +174,7 @@
 </style>
 
 
-<body {{ bodyClasses }}>
+<body {{ bodyClasses }} onload="onload()">
   <div class="tooltip">
     <span class="tooltiptext">Your API Key</span>
     <input type="password" id="api-key">
@@ -228,7 +228,20 @@
     const apiKey = document.getElementById("api-key");
     apiKey.addEventListener("change", () => {
       APIKEY = apiKey.value;
+      document.cookie = `APIKEY=${APIKEY}`;
     });
+
+
+    function onload() {
+      const cookies = document.cookie.split("; ");
+      for (let cookie of cookies) {
+        if (cookie.startsWith("APIKEY")) {
+          APIKEY = cookie.split("=")[1];
+          apiKey.value = APIKEY;
+          break;
+        }
+      }
+    }
 
     async function refreshData() {
       let chartMarkup = JSON.parse(await fetch("/charts", {
@@ -312,8 +325,8 @@
           "X-Space-App-Key": APIKEY,
         },
       });
-
-      location.reload();
+      
+      refreshData();
     }
   </script>
 </body>

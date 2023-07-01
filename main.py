@@ -144,14 +144,18 @@ async def charts() -> t.Tuple[str, str]:
             )
         )
 
+        name = i["key"][0].upper() + i["key"][1:]
         charts.append(
             CMK_TEMPLATE.render(
                 i=len(charts),
-                name=i["key"],
+                name=name,
             )
         )
 
-    return "\n".join(charts), "\n".join(codes)
+    oHtml, oScript = "\n".join(charts), "\n".join(codes)
+    if oHtml == "":
+        return "<h1>No data to display.</h1>", ""
+    return oHtml, oScript
 
 
 @app.get("/set/{graph}/{name}/{value}")
