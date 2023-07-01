@@ -50,7 +50,7 @@ class Templater:
         ind: int = 0,
     ) -> str:
         ind += 1
-        return f"""{{label: '{name}', data: {data}, backgroundColor: '{transparent_palette[ind % len(transparent_palette)]}', borderColor: '{palette[ind % len(palette)]}'}}"""
+        return f"""{{label: '{name.title()}', data: {data}, backgroundColor: '{transparent_palette[ind % len(transparent_palette)]}', borderColor: '{palette[ind % len(palette)]}'}}"""
 
     @staticmethod
     def list_to_string(data: t.List[str]) -> str:
@@ -67,7 +67,7 @@ class Templater:
     ) -> str:
         return CHART_TEMPLATE.render(
             i=i,
-            name=name,
+            name=name[0].upper() + name[1:],
             labels=Templater.list_to_string([f'"{j}"' for j in labels]),
             datasets=Templater.list_to_string(datasets),
             x_axis=x_axis,
@@ -81,10 +81,6 @@ class Templater:
         dark: bool = False,
     ) -> str:
         charts = charts if len(charts) > 0 else ["<h1>No data to display.</h1>"]
-
-        if is_dev:
-            with open("static/templates/base.html") as file:
-                BASE_TEMPLATE = j2.Template(file.read())
 
         return BASE_TEMPLATE.render(
             title=title,
@@ -123,11 +119,11 @@ def get_charts():
 async def index(dark: bool = False) -> str:
     charts = get_charts()
 
-    return Templater.dashboard(title="Home", charts=charts, dark=dark)
+    return Templater.dashboard(title="DetaMetrics | Dashboard", charts=charts, dark=dark)
 
 
 @app.get("/charts")
-async def charts(dark: bool = False) -> t.Tuple[str, str]:
+async def charts() -> t.Tuple[str, str]:
     db = base.fetch().items
 
     charts = []

@@ -1,0 +1,4 @@
+tasks:
+  deploy:
+    - space push
+    - space release
