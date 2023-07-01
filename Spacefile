@@ -6,3 +6,5 @@ micros:
     engine: python3.9
     primary: true
     dev: uvicorn main:app --reload
+    presets:
+      api_keys: true

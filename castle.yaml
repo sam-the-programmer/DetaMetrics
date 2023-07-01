@@ -1,4 +1,4 @@
 tasks:
   deploy:
     - space push
-    - space release
+    - space release --confirm
