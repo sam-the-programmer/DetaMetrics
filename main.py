@@ -82,10 +82,6 @@ class Templater:
     ) -> str:
         charts = charts if len(charts) > 0 else ["<h1>No data to display.</h1>"]
 
-        if is_dev:
-            with open("static/templates/base.html") as file:
-                BASE_TEMPLATE = j2.Template(file.read())
-
         return BASE_TEMPLATE.render(
             title=title,
             charts="\n".join(charts),
