@@ -95,10 +95,11 @@ def get_charts():
     charts = []
     for i in db:
         datasets = []
-        for k, v in i["metrics"].items():
-            datasets.append(Templater.dataset(k, v, len(datasets) - 1))
-
-        max_len = max([len(i["metrics"][k]) for i in db for k in i["metrics"]])
+        datasets.extend(
+            Templater.dataset(k, v, len(datasets) - 1)
+            for k, v in i["metrics"].items()
+        )
+        max_len = max(len(i["metrics"][k]) for i in db for k in i["metrics"])
         labels = [str(i) for i in range(max_len)]
 
         charts.append(
@@ -130,10 +131,11 @@ async def charts() -> t.Tuple[str, str]:
     codes = []
     for i in db:
         datasets = []
-        for k, v in i["metrics"].items():
-            datasets.append(Templater.dataset(k, v, len(datasets) - 1))
-
-        max_len = max([len(i["metrics"][k]) for i in db for k in i["metrics"]])
+        datasets.extend(
+            Templater.dataset(k, v, len(datasets) - 1)
+            for k, v in i["metrics"].items()
+        )
+        max_len = max(len(i["metrics"][k]) for i in db for k in i["metrics"])
         labels = [str(i) for i in range(max_len)]
 
         codes.append(
@@ -153,9 +155,7 @@ async def charts() -> t.Tuple[str, str]:
         )
 
     oHtml, oScript = "\n".join(charts), "\n".join(codes)
-    if oHtml == "":
-        return "<h1>No data to display.</h1>", ""
-    return oHtml, oScript
+    return ("<h1>No data to display.</h1>", "") if not oHtml else (oHtml, oScript)
 
 
 @app.get("/set/{graph}/{name}/{value}")
